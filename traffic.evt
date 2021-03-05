@@ -1,0 +1,82 @@
+library TrafficLights 
+
+logic EVT
+spec TwoBools = 
+  Bool
+  then
+   op i_go, u_go : Bool
+   pred not(i_go = true /\ u_go = true)
+end
+
+spec LightAbstract = 
+  TwoBools
+  then
+   event Initialisation =
+    thenAct
+     act1 i_go = false
+   event set_go = 
+    when
+     grd1 u_go = false
+    thenAct
+     act1 i_go = true
+   event set_stop = 
+    thenAct
+     act1 i_go = false
+end
+
+spec mac1 = (LightAbstract with i_go |-> cars_go, u_go |-> peds_go, set_go |-> set_cars_go, set_stop |-> set_cars_stop) 
+            and (LightAbstract with i_go |-> peds_go, u_go |-> cars_go, set_go |-> set_peds_go, set_stop |-> set_peds_stop)
+
+spec Colours = 
+  free type Colours ::= red|green|orange
+end
+
+spec TwoColours = 
+  Colours
+  then
+    op  i_col : Colours
+    op  u_col : Colours
+   pred not(i_col = green /\ u_col = green)
+end
+
+spec LightRefined = 
+  TwoColours
+  then
+   event Initialisation =
+    thenAct
+     act1 i_col = red
+   event set_green = 
+    when
+     grd1 u_col = red
+    thenAct
+     act1 i_col = green
+   event set_red = 
+    thenAct
+     act1 i_col = red
+end
+
+spec BoolButton = 
+  Bool
+  then
+  op button : Bool
+end
+
+spec ButtonSpec = 
+  BoolButton
+  then
+   event gobutton = 
+    when
+     grd1 button = true
+    thenAct
+     act1 button = false
+   event pushbutton =
+    thenAct
+     act1 button = true
+end
+
+spec mac1 = (LightRefined with i_col |-> cars_colour, u_col |-> peds_colour, set_green |-> set_cars_green, set_red |-> set_cars_red) 
+            and (LightRefined and 
+            (ButtonSpec with gobutton |-> set_peds_green)
+             with i_col |-> peds_colour, u_col |-> cars_colour, set_green |-> set_peds_green, set_red |-> set_peds_red)
+
+view k1 : TwoBool to TwoColours = Bool |-> Colours, true |-> green, false |-> red
